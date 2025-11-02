@@ -32,7 +32,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, ".next/types/app/components/ui/header/page.jsx", "src/app/api/platform-video/route.js"  ],
   "exclude": [
     "node_modules"
   ],

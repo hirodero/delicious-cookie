@@ -7,7 +7,7 @@ import { MdEmail } from "react-icons/md"
 import { RiLockPasswordFill } from "react-icons/ri"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Overlay } from "../overlay-skeleton"
+import { Overlay } from "./overlay-skeleton"
 import { useAuth } from "@/app/context/auth"
 
 function FloatingNotice({ type, message, sub }) {

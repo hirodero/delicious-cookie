@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { IoVideocamOutline } from 'react-icons/io5'
 import { FaPencilAlt, FaTrashAlt, FaPlus } from 'react-icons/fa'
 import { FaAnglesLeft, FaAnglesRight } from 'react-icons/fa6'
-import Header from '@/app/components/ui/header/page'
+import Header from '@/app/components/ui/header'
 
 function Spinner({ className = '' }) {
   return (

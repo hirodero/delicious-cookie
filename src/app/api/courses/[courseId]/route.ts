@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 
-type Ctx = { params: { courseId: string } }
+function extractCourseId(req: Request) {
+  const parts = new URL(req.url).pathname.split('/')
 
-export async function PATCH(req: Request, { params }: Ctx) {
-  const { courseId } = await params
+  const coursesIdx = parts.indexOf('courses')
+
+  const courseId =
+    coursesIdx !== -1 && parts.length > coursesIdx + 1
+      ? parts[coursesIdx + 1]
+      : ''
+
+  return courseId
+}
+
+export async function PATCH(req: Request) {
+  const courseId = extractCourseId(req)
 
   try {
     const body = await req.json()
@@ -21,27 +32,45 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
     return NextResponse.json({ course })
   } catch {
-    return NextResponse.json({ error: 'Failed to update course' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to update course' },
+      { status: 500 }
+    )
   }
 }
 
-export async function DELETE(_req: Request, { params }: Ctx) {
-  const { courseId } = await params
+export async function DELETE(req: Request) {
+  const courseId = extractCourseId(req)
 
   try {
     await prisma.$transaction(async (tx) => {
-      await tx.watchEvent.deleteMany({ where: { lesson: { courseId } } })
-      await tx.lessonProgress.deleteMany({ where: { lesson: { courseId } } })
-      await tx.videoAsset.deleteMany({ where: { lesson: { courseId } } })
-      await tx.lesson.deleteMany({ where: { courseId } })
+      await tx.watchEvent.deleteMany({
+        where: { lesson: { courseId } },
+      })
+      await tx.lessonProgress.deleteMany({
+        where: { lesson: { courseId } },
+      })
+      await tx.videoAsset.deleteMany({
+        where: { lesson: { courseId } },
+      })
+      await tx.lesson.deleteMany({
+        where: { courseId },
+      })
 
-      await tx.enrollment.deleteMany({ where: { courseId } })
+      await tx.enrollment.deleteMany({
+        where: { courseId },
+      })
 
-      await tx.course.delete({ where: { id: courseId } })
+      await tx.course.delete({
+        where: { id: courseId },
+      })
     })
 
     return NextResponse.json({ ok: true })
   } catch {
-    return NextResponse.json({ error: 'Failed to delete course' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to delete course' },
+      { status: 500 }
+    )
   }
 }

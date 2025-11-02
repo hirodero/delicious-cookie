@@ -2,16 +2,26 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { getSessionUser } from '@/app/lib/auth'
 
-export async function GET(
-  req: Request,
-  { params }: { params: { courseId: string } }
-) {
+function extractCourseId(req: Request) {
+  const parts = new URL(req.url).pathname.split('/')
+
+  const coursesIdx = parts.indexOf('courses')
+
+  const courseId =
+    coursesIdx !== -1 && parts.length > coursesIdx + 1
+      ? parts[coursesIdx + 1]
+      : ''
+
+  return courseId
+}
+
+export async function GET(req: Request) {
   const user = await getSessionUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { courseId } = params
+  const courseId = extractCourseId(req)
 
   const enroll = await prisma.enrollment.findUnique({
     where: {
@@ -21,7 +31,7 @@ export async function GET(
       },
     },
     select: {
-      role: true, 
+      role: true,
     },
   })
 
@@ -69,7 +79,7 @@ export async function GET(
   })
 
   const progressMap = new Map(
-    progresses.map((p) => [p.lessonId, p.completed])
+    progresses.map((p) => [p.lessonId, p.completed]),
   )
 
   const shaped = lessons.map((lesson) => {
@@ -87,17 +97,13 @@ export async function GET(
   return NextResponse.json({ lessons: shaped })
 }
 
-
-export async function POST(
-  req: Request,
-  { params }: { params: { courseId: string } }
-) {
+export async function POST(req: Request) {
   const user = await getSessionUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { courseId } = params
+  const courseId = extractCourseId(req)
 
   const enroll = await prisma.enrollment.findUnique({
     where: {
@@ -120,7 +126,7 @@ export async function POST(
   if (!isPrivileged) {
     return NextResponse.json(
       { error: 'forbidden' },
-      { status: 403 }
+      { status: 403 },
     )
   }
 
@@ -135,7 +141,7 @@ export async function POST(
   } catch {
     return NextResponse.json(
       { error: 'invalid json' },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -144,7 +150,7 @@ export async function POST(
   if (!title || !videoKey) {
     return NextResponse.json(
       { error: 'missing required fields: title, videoKey' },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -172,7 +178,7 @@ export async function POST(
       data: {
         lessonId: newLesson.id,
         storageKey: videoKey,
-        mimeType: 'video/mp4', 
+        mimeType: 'video/mp4',
         isDefault: true,
       },
     })
@@ -182,6 +188,6 @@ export async function POST(
 
   return NextResponse.json(
     { ok: true, lessonId: created.id },
-    { status: 201 }
+    { status: 201 },
   )
 }

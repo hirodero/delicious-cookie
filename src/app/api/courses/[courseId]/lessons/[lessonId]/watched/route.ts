@@ -10,16 +10,32 @@ async function safeJson(req: Request) {
   }
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
-) {
+function extractIds(req: Request) {
+  const parts = new URL(req.url).pathname.split('/')
+
+  const coursesIdx = parts.indexOf('courses')
+  const lessonsIdx = parts.indexOf('lessons')
+
+  const courseId =
+    coursesIdx !== -1 && parts.length > coursesIdx + 1
+      ? parts[coursesIdx + 1]
+      : ''
+
+  const lessonId =
+    lessonsIdx !== -1 && parts.length > lessonsIdx + 1
+      ? parts[lessonsIdx + 1]
+      : ''
+
+  return { courseId, lessonId }
+}
+
+export async function POST(req: Request) {
   const user = await getSessionUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { courseId, lessonId } = params
+  const { courseId, lessonId } = extractIds(req)
   const body = await safeJson(req)
 
   const positionS =
@@ -85,6 +101,7 @@ export async function POST(
     },
   })
 
+  // log watchEvent
   await prisma.watchEvent.create({
     data: {
       userId: user.id,

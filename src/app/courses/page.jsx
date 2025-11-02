@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Header from '../components/ui/header/page'
+import Header from '@/app/components/ui/header'
 import { FaPencil, FaTrash, FaPlus } from 'react-icons/fa6'
 import { FaAngleDoubleUp, FaAngleDoubleDown } from 'react-icons/fa'
 import { IoSearch } from 'react-icons/io5'
