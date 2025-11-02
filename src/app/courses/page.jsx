@@ -906,7 +906,7 @@ export default function Courses() {
           )}
 
           {gridData.length !== 0 && isAdmin && (
-            <div className="mt-6 flex justify-start">
+            <div className="fixed mt-6 flex left-[5%] bottom-5">
               <button
                 onClick={() => setEditor({ open: true, index: -1 })}
                 className="inline-flex items-center gap-2 rounded-xl bg-amber-500/20 px-4 py-2 hover:bg-amber-500/30"
