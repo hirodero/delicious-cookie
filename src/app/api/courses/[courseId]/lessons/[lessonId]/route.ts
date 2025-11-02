@@ -1,18 +1,21 @@
-// app/api/courses/[courseId]/lessons/[lessonId]/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { getSessionUser } from '@/app/lib/auth'
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
-) {
+type RouteContext = {
+  params: {
+    courseId: string
+    lessonId: string
+  }
+}
+
+export async function PATCH(req: NextRequest, context: RouteContext) {
   const user = await getSessionUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { courseId, lessonId } = params
+  const { courseId, lessonId } = context.params
   const body = await req.json()
   const { title, description, videoKey } = body
 
@@ -20,6 +23,7 @@ export async function PATCH(
     where: { id: lessonId, courseId },
     include: { videos: true },
   })
+
   if (!existing) {
     return NextResponse.json({ error: 'lesson not found' }, { status: 404 })
   }
@@ -34,6 +38,7 @@ export async function PATCH(
 
   if (videoKey) {
     const currentDefault = existing.videos.find((v) => v.isDefault)
+
     if (!currentDefault || currentDefault.storageKey !== videoKey) {
       await prisma.videoAsset.updateMany({
         where: { lessonId },
@@ -41,6 +46,7 @@ export async function PATCH(
       })
 
       const match = existing.videos.find((v) => v.storageKey === videoKey)
+
       if (match) {
         await prisma.videoAsset.update({
           where: { id: match.id },
@@ -62,20 +68,18 @@ export async function PATCH(
   return NextResponse.json({ ok: true })
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
-) {
+export async function DELETE(req: NextRequest, context: RouteContext) {
   const user = await getSessionUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { courseId, lessonId } = params
+  const { courseId, lessonId } = context.params
 
   const existing = await prisma.lesson.findFirst({
     where: { id: lessonId, courseId },
   })
+
   if (!existing) {
     return NextResponse.json({ error: 'lesson not found' }, { status: 404 })
   }
@@ -83,12 +87,15 @@ export async function DELETE(
   await prisma.watchEvent.deleteMany({
     where: { lessonId },
   })
+
   await prisma.lessonProgress.deleteMany({
     where: { lessonId },
   })
+
   await prisma.videoAsset.deleteMany({
     where: { lessonId },
   })
+
   await prisma.lesson.delete({
     where: { id: lessonId },
   })
