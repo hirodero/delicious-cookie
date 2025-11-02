@@ -1,0 +1,160 @@
+// ---------- DATABASE CONNECTION ----------
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- CLIENT GENERATOR ----------
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------- MODELS ----------
+
+// Main user model
+model AppUser {
+  id         String   @id @default(uuid())
+  username   String   @unique
+  email      String   @unique
+  passhash   String
+  avatarUrl  String?
+  role       String   @default("user")
+  createdAt  DateTime @default(now())
+  isVerified Boolean  @default(false) // <-- user harus verify email dulu
+
+  // relations
+  enrollments         Enrollment[]         @relation("UserEnrollments")
+  progresses          LessonProgress[]
+  watchEvents         WatchEvent[]
+  courses             Course[]             @relation("CreatorCourses")
+  passwordResetTokens PasswordResetToken[] @relation("UserPasswordResetTokens")
+  verifyTokens        VerificationToken[]  @relation("UserVerificationTokens")
+}
+
+// Course model
+model Course {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  title        String
+  description  String?
+  thumbnailUrl String?
+  isPublished  Boolean @default(false)
+  orderIndex   Int     @default(9999)
+
+  createdById String
+  createdBy   AppUser @relation("CreatorCourses", fields: [createdById], references: [id])
+
+  lessons     Lesson[]
+  enrollments Enrollment[] @relation("CourseEnrollments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Lesson model
+model Lesson {
+  id              String   @id @default(uuid())
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+  title           String
+  description     String?
+  durationSeconds Int?
+  isFreePreview   Boolean  @default(false)
+  orderIndex      Int      @default(1)
+  createdAt       DateTime @default(now())
+
+  videos      VideoAsset[]
+  progresses  LessonProgress[]
+  watchEvents WatchEvent[]
+}
+
+// Video assets for lessons
+model VideoAsset {
+  id          String  @id @default(uuid())
+  lessonId    String
+  lesson      Lesson  @relation(fields: [lessonId], references: [id])
+  storageKey  String
+  mimeType    String
+  width       Int?
+  height      Int?
+  bitrateKbps Int?
+  label       String?
+  isDefault   Boolean @default(false)
+}
+
+// Enrollment model (many-to-many link between user and course)
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+
+  user   AppUser @relation("UserEnrollments", fields: [userId], references: [id])
+  course Course  @relation("CourseEnrollments", fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+// Lesson progress
+model LessonProgress {
+  id            String   @id @default(uuid())
+  userId        String
+  lessonId      String
+  lastPositionS Int      @default(0)
+  completed     Boolean  @default(false)
+  updatedAt     DateTime @default(now())
+
+  user   AppUser @relation(fields: [userId], references: [id])
+  lesson Lesson  @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+// Watch event log
+model WatchEvent {
+  id        BigInt   @id @default(autoincrement())
+  userId    String
+  lessonId  String
+  positionS Int
+  event     String
+  createdAt DateTime @default(now())
+
+  user   AppUser @relation(fields: [userId], references: [id])
+  lesson Lesson  @relation(fields: [lessonId], references: [id])
+}
+
+// Standalone platform video table (for global video assets etc.)
+model PlatformVideo {
+  id        String   @id @default(cuid())
+  videoKey  String
+  muted     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- PASSWORD RESET TOKEN MODEL ----------
+// dipakai untuk lupa password / reset password
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String
+  createdAt DateTime @default(now())
+
+  user AppUser? @relation("UserPasswordResetTokens", fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
+}
+
+// ---------- EMAIL VERIFICATION TOKEN MODEL ----------
+// dipakai pas register untuk aktivasi akun
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String
+  createdAt DateTime @default(now())
+
+  user AppUser? @relation("UserVerificationTokens", fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
+}
