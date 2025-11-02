@@ -10,7 +10,6 @@ export default function ForgotPasswordPage() {
 }
 
 function ForgotPasswordFallback() {
-  // simple loading shell so Suspense is happy
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/90 text-white font-mono p-4">
       <div
