@@ -130,13 +130,16 @@ function CardEditor({
   const [title, setTitle] = useState(item?.title ?? '')
   const [desc, setDesc] = useState(item?.description ?? '')
   const [thumb, setThumb] = useState(item?.thumbnailUrl ?? null)
+
   const [showCrop, setShowCrop] = useState(false)
   const [uploadingThumb, setUploadingThumb] = useState(false)
+  const [thumbError, setThumbError] = useState('')
 
   useEffect(() => {
     setTitle(item?.title ?? '')
     setDesc(item?.description ?? '')
     setThumb(item?.thumbnailUrl ?? null)
+    setThumbError('')
   }, [item])
 
   if (!open) return null
@@ -144,6 +147,7 @@ function CardEditor({
   async function handleThumbFromCrop(dataUrl) {
     try {
       setUploadingThumb(true)
+      setThumbError('')
 
       const blob = await (await fetch(dataUrl)).blob()
       const file = new File([blob], 'thumbnail.jpg', {
@@ -160,12 +164,14 @@ function CardEditor({
 
       const out = await res.json()
       if (!res.ok) {
-        alert('Upload thumbnail gagal')
+        setThumbError(out?.error || 'Upload thumbnail gagal')
         return
       }
 
       setThumb(out.url)
       setShowCrop(false)
+    } catch (err) {
+      setThumbError('Upload thumbnail gagal')
     } finally {
       setUploadingThumb(false)
     }
@@ -173,17 +179,23 @@ function CardEditor({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/60 z-40"
+        onClick={() => {
+          if (!uploadingThumb) onClose()
+        }}
+      />
 
       <div className="fixed inset-0 z-50 grid place-items-center p-4">
-        <div className="w-full max-w-3xl rounded-2xl bg-neutral-900 text-neutral-100 ring-1 ring-white/10 overflow-hidden">
+        <div className="w-full max-w-3xl rounded-2xl bg-neutral-900 text-neutral-100 ring-1 ring-white/10 overflow-hidden shadow-xl shadow-black/60 border border-white/10">
           <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
             <h3 className="text-lg font-semibold">
               {item ? 'Edit Course Card' : 'Add Course Card'}
             </h3>
             <button
               onClick={onClose}
-              className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20"
+              disabled={uploadingThumb}
+              className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               ✕
             </button>
@@ -191,7 +203,7 @@ function CardEditor({
 
           <div className="grid md:grid-cols-2 gap-4 p-5">
             <div className="space-y-3">
-              <div className="aspect-video w-full overflow-hidden rounded-xl ring-1 ring-white/10 bg-black">
+              <div className="relative aspect-video w-full overflow-hidden rounded-xl ring-1 ring-white/10 bg-black">
                 {thumb ? (
                   <img
                     src={thumb}
@@ -199,16 +211,39 @@ function CardEditor({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="grid h-full w-full place-items-center text-sm text-white/60">
+                  <div className="grid h-full w-full place-items-center text-sm text-white/60 bg-neutral-950">
                     Belum ada gambar
+                  </div>
+                )}
+
+                {uploadingThumb && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 backdrop-blur-[2px] text-[11px] text-white/80 font-semibold">
+                    <TinySpinner className="h-6 w-6 border-2 border-white/30 border-t-yellow-400" />
+                    <div>Uploading...</div>
+                    <div className="text-[10px] text-white/40 tracking-wider uppercase">
+                      please wait
+                    </div>
                   </div>
                 )}
               </div>
 
+              {thumbError && (
+                <div className="text-[11px] font-semibold text-red-400">
+                  {thumbError}
+                </div>
+              )}
+
               <button
                 disabled={uploadingThumb}
-                onClick={() => setShowCrop(true)}
-                className="w-full rounded-md bg-amber-500/20 px-4 py-2 hover:bg-amber-500/30 disabled:opacity-50"
+                onClick={() => {
+                  if (!uploadingThumb) setShowCrop(true)
+                }}
+                className={
+                  'w-full rounded-md px-4 py-2 text-sm font-semibold transition ' +
+                  (uploadingThumb
+                    ? 'bg-amber-500/10 text-amber-200/40 cursor-not-allowed ring-1 ring-amber-500/30'
+                    : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 ring-1 ring-amber-500/30')
+                }
               >
                 {uploadingThumb ? 'Uploading…' : 'Edit Picture (Crop)'}
               </button>
@@ -217,20 +252,22 @@ function CardEditor({
             <div className="space-y-3">
               <label className="block text-sm opacity-80 mb-1">Title</label>
               <input
-                className="w-full rounded-md bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-md bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Judul materi…"
+                disabled={uploadingThumb}
               />
 
               <label className="block text-sm opacity-80 mt-3 mb-1">
                 Description
               </label>
               <textarea
-                className="min-h-[140px] w-full resize-y rounded-md bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="min-h-[140px] w-full resize-y rounded-md bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 placeholder="Deskripsi singkat…"
+                disabled={uploadingThumb}
               />
             </div>
           </div>
@@ -238,7 +275,8 @@ function CardEditor({
           <div className="flex items-center justify-between gap-2 px-5 py-3 border-t border-white/10">
             <button
               onClick={onClose}
-              className="rounded-md px-4 py-2 bg-white/10 hover:bg-white/20"
+              disabled={uploadingThumb}
+              className="rounded-md px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Batal
             </button>
@@ -247,25 +285,35 @@ function CardEditor({
               {!!item && (
                 <button
                   onClick={() => {
-                    onAskDelete?.()
+                    if (!uploadingThumb) onAskDelete?.()
                   }}
-                  className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-red-600/90 hover:bg-red-600 text-white font-semibold"
+                  disabled={uploadingThumb}
+                  className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-red-600/90 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaTrash /> Delete
                 </button>
               )}
 
               <button
-                onClick={() =>
+                disabled={uploadingThumb}
+                onClick={() => {
+                  if (uploadingThumb) return
                   onSave({
                     title: title.trim(),
                     description: desc.trim(),
                     thumbnailUrl: thumb || null,
                   })
-                }
-                className="rounded-md px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold"
+                }}
+                className="rounded-md px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Simpan
+                {uploadingThumb ? (
+                  <div className="flex items-center gap-2">
+                    <TinySpinner className="h-4 w-4 border-white/30 border-t-white" />
+                    <span>Saving…</span>
+                  </div>
+                ) : (
+                  'Simpan'
+                )}
               </button>
             </div>
           </div>
@@ -274,7 +322,9 @@ function CardEditor({
 
       {showCrop && (
         <CropperModal
-          onClose={() => setShowCrop(false)}
+          onClose={() => {
+            if (!uploadingThumb) setShowCrop(false)
+          }}
           onSave={handleThumbFromCrop}
         />
       )}
@@ -347,8 +397,8 @@ export default function Courses() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const [heroVideoKey, setHeroVideoKey] = useState(null) 
-  const [heroVideoPlayUrl, setHeroVideoPlayUrl] = useState(null) 
+  const [heroVideoKey, setHeroVideoKey] = useState(null)
+  const [heroVideoPlayUrl, setHeroVideoPlayUrl] = useState(null)
   const [heroMuted, setHeroMuted] = useState(true)
 
   const [loadingHeroData, setLoadingHeroData] = useState(false)
@@ -609,7 +659,7 @@ export default function Courses() {
 
   async function toggleMute() {
     const newMuted = !heroMuted
-    setHeroMuted(newMuted) 
+    setHeroMuted(newMuted)
 
     if (!heroVideoKey) return
 
@@ -846,7 +896,9 @@ export default function Courses() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <span className="text-white/60">Picture Placeholder</span>
+                                <span className="text-white/60">
+                                  Picture Placeholder
+                                </span>
                               )}
                             </div>
 
@@ -854,7 +906,7 @@ export default function Courses() {
                                             xl:text-2xl md:text-xl text-md
                                             xl:px-4 xl:py-6 md:px-3 md:py-3 px-2 py-2
                                             text-white leading-snug wrap-break-word">
-                              {index+1}. {item.title}
+                              {index + 1}. {item.title}
                             </div>
 
                             <div
@@ -886,9 +938,12 @@ export default function Courses() {
 
                                   <div className="flex w-full text-[10px] text-black/80 font-extrabold tracking-tight justify-between mt-1">
                                     <span>
-                                      {item.watchedLessons} / {item.totalLessons} lessons
+                                      {item.watchedLessons} /{' '}
+                                      {item.totalLessons} lessons
                                     </span>
-                                    <span>{item.progressPct.toFixed(1)}%</span>
+                                    <span>
+                                      {item.progressPct.toFixed(1)}%
+                                    </span>
                                   </div>
                                 </div>
                               </div>
