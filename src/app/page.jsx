@@ -31,7 +31,7 @@ export default function Home() {
 
       <div
         className="
-          absolute bottom-0 left-[-10%] w-[86%] h-[44svh] z-0
+          absolute bottom-0 left-[-18%] w-[86%] h-[44svh] z-0
           sm:left-[-8%] sm:w-[82%] sm:h-[74svh]
           md:left-[-6%] md:w-[76%] md:h-[76svh]
           lg:left-auto lg:right-0 lg:w-[46%] lg:h-[78svh]
