@@ -5,7 +5,7 @@ import {AuthProvider} from './context/auth'
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${wallpoet.className} bg-black fixed inset-0`}>
+      <body className={`${wallpoet.className} bg-black`}>
         <div className="overflow-y-auto bg-radial scroll-hide w-full h-dvh flex flex-col bg-cover">
             <FlickeringGrid
                 className="absolute inset-0 animate-pulse -z-10"
