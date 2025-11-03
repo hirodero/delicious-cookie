@@ -1176,13 +1176,6 @@ export default function LessonsPage() {
               >
                 Previous Lesson
               </button>
-
-              <div className="text-sm text-white/70 text-center flex-1">
-                {lessons.length === 0
-                  ? '0 / 0'
-                  : `${activeIdx + 1} / ${lessons.length} • Watched: ${totalWatched}/${lessons.length}`}
-              </div>
-
               <button
                 onClick={goNextLesson}
                 disabled={nextDisabled || isPageBusy}
@@ -1190,6 +1183,13 @@ export default function LessonsPage() {
               >
                 Next Lesson
               </button>
+
+              <div className="text-sm text-white/70 text-center flex-1">
+                {lessons.length === 0
+                  ? '0 / 0'
+                  : `${activeIdx + 1} / ${lessons.length} • Watched: ${totalWatched}/${lessons.length}`}
+              </div>
+
             </div>
           </div>
         </div>
