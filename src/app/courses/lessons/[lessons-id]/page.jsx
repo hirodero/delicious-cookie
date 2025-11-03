@@ -1167,7 +1167,7 @@ export default function LessonsPage() {
             </div>
           </div>
 
-          <div className="w-full border-t bg-black/90 outline-3 min-h-[40%] outline-yellow-800/80">
+          <div className="w-full border-t bg-black/90 outline-3 min-h-[40%] lg:min-h-auto outline-yellow-800/80">
             <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3 text-[13px] md:text-base">
               <button
                 onClick={goPrevLesson}
