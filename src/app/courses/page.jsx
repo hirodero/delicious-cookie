@@ -691,7 +691,7 @@ export default function Courses() {
   const heroBusy = loadingHeroData || loadingHero
 
   return (
-    <div className="flex flex-col scroll-hide fixed inset-0 min-h-screen overflow-y-auto w-full text-white bg-cover bg-fixed bg-center">
+    <div className="flex flex-col scroll-hide h-full overflow-y-auto w-full text-white bg-cover bg-fixed bg-center">
       <Header />
 
       <Travel scrollToTop={scrollToTop} scrollToBottom={scrollToBottom} />
@@ -734,7 +734,7 @@ export default function Courses() {
             </div>
           )}
 
-          <div className="flex items-center w-full xl:text-3xl rounded-b-2xl text-xl xl:px-4 xl:py-2 px-4 py-1 border-y-2 border-yellow-700 font-bold break-all bg-red-950/95 scroll-hide">
+          <div className="flex items-center w-full xl:text-3xl rounded-b-2xl text-xl xl:px-4 xl:py-2 px-4 py-1 border-y-2 border-yellow-700 font-bold break-all bg-red-950 scroll-hide">
             <p className="font-sail xl:text-2xl md:text-xl text-lg text-orange-400">
               CuanVerse
             </p>

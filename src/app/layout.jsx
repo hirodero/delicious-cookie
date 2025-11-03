@@ -6,7 +6,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${wallpoet.className}`}>
-        <div className="fixed inset-0 overflow-y-auto bg-radial from-orange-950 via-black to-orange-950 w-full h-dvh flex flex-col bg-cover">
+        <div className="fixed inset-0 overflow-y-auto bg-radial scroll-hide from-orange-950 via-black to-orange-950 w-full h-dvh flex flex-col bg-cover">
             <FlickeringGrid
                 className="absolute inset-0 animate-pulse -z-10"
                 squareSize={7}
