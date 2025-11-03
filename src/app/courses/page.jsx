@@ -691,7 +691,7 @@ export default function Courses() {
   const heroBusy = loadingHeroData || loadingHero
 
   return (
-    <div className="flex flex-col scroll-hide h-full overflow-y-auto w-full text-white bg-cover bg-fixed bg-center">
+    <div className="flex flex-col  h-full overflow-y-auto w-full text-white bg-cover bg-fixed bg-center">
       <Header />
 
       <Travel scrollToTop={scrollToTop} scrollToBottom={scrollToBottom} />
