@@ -141,6 +141,7 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
   const [playUrl, setPlayUrl] = useState('')
 
   const [uploading, setUploading] = useState(false)
+  const [uploadPct, setUploadPct] = useState(0) 
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -148,7 +149,9 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
     setDesc(initial?.description || '')
     setVideoKey(initial?.videoKey || '')
     setPlayUrl('')
+
     setUploading(false)
+    setUploadPct(0)
     setSaving(false)
   }, [initial])
 
@@ -188,41 +191,78 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
       return
     }
 
-    try {
-      setUploading(true)
+    setUploading(true)
+    setUploadPct(0)
 
+    try {
       const form = new FormData()
       form.append('file', f)
 
-      const upRes = await fetch('/api/upload/video', {
-        method: 'POST',
-        body: form,
-      })
-      const upData = await upRes.json()
-      if (!upRes.ok) {
-        console.error('UPLOAD_FAIL', upData)
-        alert('Upload video gagal')
-        return
+      const xhr = new XMLHttpRequest()
+
+      xhr.open('POST', '/api/upload/video', true)
+
+      xhr.upload.onprogress = (ev) => {
+        if (!ev.lengthComputable) return
+        const pct = (ev.loaded / ev.total) * 100
+        setUploadPct(pct)
       }
 
-      const key = upData.storageKey
-      setVideoKey(key)
+      xhr.onreadystatechange = async () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            let upData
+            try {
+              upData = JSON.parse(xhr.responseText)
+            } catch {
+              upData = null
+            }
 
-      const urlRes = await fetch(
-        `/api/upload/video-url?key=${encodeURIComponent(key)}`
-      )
-      const urlData = await urlRes.json()
-      if (urlRes.ok && urlData.url) {
-        setPlayUrl(urlData.url)
-      } else {
-        setPlayUrl('')
+            if (!upData || !upData.storageKey) {
+              alert('Upload gagal (no storageKey).')
+              setUploading(false)
+              return
+            }
+
+            const key = upData.storageKey
+            setVideoKey(key)
+
+            try {
+              const urlRes = await fetch(
+                `/api/upload/video-url?key=${encodeURIComponent(key)}`
+              )
+              const urlData = await urlRes.json()
+              if (urlRes.ok && urlData.url) {
+                setPlayUrl(urlData.url)
+              } else {
+                setPlayUrl('')
+              }
+            } catch (err2) {
+              console.error('preview url fail', err2)
+              setPlayUrl('')
+            }
+
+            if (!title) {
+              setTitle(f.name.replace(/\.[^/.]+$/, ''))
+            }
+
+            setUploading(false)
+            setUploadPct(100)
+          } else {
+            console.error('UPLOAD_FAIL', xhr.responseText)
+            alert('Upload video gagal')
+            setUploading(false)
+            setUploadPct(0)
+          }
+        }
       }
 
-      if (!title) {
-        setTitle(f.name.replace(/\.[^/.]+$/, ''))
-      }
-    } finally {
+      xhr.send(form)
+    } catch (err) {
+      console.error('UPLOAD_ERR', err)
+      alert('Upload video gagal')
       setUploading(false)
+      setUploadPct(0)
     }
   }
 
@@ -244,6 +284,8 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
 
   if (!open) return null
 
+  const pctRounded = Math.floor(uploadPct)
+
   return (
     <>
       <div
@@ -254,7 +296,7 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
       />
 
       <div className="fixed inset-0 z-120 grid place-items-center p-4">
-        <div className="relative w-full max-w-3xl rounded-2xl bg-neutral-900 text-neutral-100 ring-1 ring-white/10 overflow-hidden">
+        <div className="relative w-full max-w-3xl rounded-2xl bg-neutral-900 text-neutral-100 ring-1 ring-white/10 overflow-hidden shadow-xl shadow-black/60 border border-white/10">
           <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               {initial ? 'Edit Lesson' : 'Tambah Lesson'}
@@ -286,9 +328,22 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
                 )}
 
                 {uploading && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs gap-2">
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white text-xs gap-2 px-4">
                     <Spinner className="h-6 w-6 border-2" />
-                    <div>Uploading video…</div>
+                    <div className="text-white font-semibold text-sm">
+                      Uploading video… {pctRounded}%
+                    </div>
+
+                    <div className="w-full max-w-[180px] bg-white/20 rounded-full h-2 overflow-hidden ring-1 ring-white/30">
+                      <div
+                        className="h-full bg-yellow-400 transition-all duration-100"
+                        style={{ width: `${pctRounded}%` }}
+                      />
+                    </div>
+
+                    <div className="text-[10px] text-white/50 uppercase tracking-wide">
+                      please wait
+                    </div>
                   </div>
                 )}
               </div>
@@ -304,13 +359,25 @@ function VideoModal({ open, initial, onClose, onSave, isDisabled }) {
               <button
                 disabled={uploading || saving || isDisabled}
                 onClick={pickFile}
-                className="mt-3 w-full rounded-md bg-amber-500/20 px-4 py-2 hover:bg-amber-500/30 disabled:opacity-30"
+                className="mt-3 w-full rounded-md bg-amber-500/20 px-4 py-2 hover:bg-amber-500/30 disabled:opacity-30 flex flex-col text-center"
               >
-                {uploading
-                  ? 'Uploading…'
-                  : playUrl
-                  ? 'Ganti Video'
-                  : 'Pilih & Upload Video'}
+                {uploading ? (
+                  <>
+                    <div className="font-semibold text-white text-sm">
+                      Uploading… {pctRounded}%
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden mt-2 ring-1 ring-white/30">
+                      <div
+                        className="h-full bg-yellow-400 transition-all duration-100"
+                        style={{ width: `${pctRounded}%` }}
+                      />
+                    </div>
+                  </>
+                ) : playUrl ? (
+                  'Ganti Video'
+                ) : (
+                  'Pilih & Upload Video'
+                )}
               </button>
             </div>
 
@@ -399,7 +466,11 @@ function SidebarKnob({ sidebarOpen, onToggle, isMobile }) {
             }
       }
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-      aria-label={sidebarOpen ? 'Tutup daftar pelajaran' : 'Buka daftar pelajaran'}
+      aria-label={
+        sidebarOpen
+          ? 'Tutup daftar pelajaran'
+          : 'Buka daftar pelajaran'
+      }
     >
       {sidebarOpen ? (
         <FaAnglesLeft className="scale-125" />
@@ -430,7 +501,7 @@ export default function LessonsPage() {
       if (prev !== false) return prev
       return isMobile ? false : true
     })
-  }, [hydrated]) 
+  }, [hydrated])
 
   const [user, setUser] = useState(null)
   const isAdmin = user?.role === 'admin'
@@ -546,37 +617,35 @@ export default function LessonsPage() {
     }
   }, [invalidCourse])
 
-async function markAsWatched(idx) {
-  const lesson = lessons[idx]
-  if (!lesson) return
-  if (lesson.watchedByMe) return
+  async function markAsWatched(idx) {
+    const lesson = lessons[idx]
+    if (!lesson) return
+    if (lesson.watchedByMe) return
 
-  setLessons(prev =>
-    prev.map((l, i) =>
-      i === idx ? { ...l, watchedByMe: true } : l
+    setLessons((prev) =>
+      prev.map((l, i) => (i === idx ? { ...l, watchedByMe: true } : l))
     )
-  )
 
-  try {
-    const res = await fetch(`/api/courses/${courseId}/lessons/${lesson.id}/watched`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ positionS: 9999, event: 'completed' }),
-    })
-
-    if (!res.ok) throw new Error('Mark failed')
-
-    setTimeout(() => refreshLessons(), 1000)
-  } catch (err) {
-    console.error(err)
-    setLessons(prev =>
-      prev.map((l, i) =>
-        i === idx ? { ...l, watchedByMe: false } : l
+    try {
+      const res = await fetch(
+        `/api/courses/${courseId}/lessons/${lesson.id}/watched`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ positionS: 9999, event: 'completed' }),
+        }
       )
-    )
-  }
-}
 
+      if (!res.ok) throw new Error('Mark failed')
+
+      setTimeout(() => refreshLessons(), 1000)
+    } catch (err) {
+      console.error(err)
+      setLessons((prev) =>
+        prev.map((l, i) => (i === idx ? { ...l, watchedByMe: false } : l))
+      )
+    }
+  }
 
   function addVideo() {
     if (!isAdmin) return
@@ -789,7 +858,7 @@ async function markAsWatched(idx) {
                             onClick={() => {
                               if (!isPageBusy) {
                                 setActiveIdx(i)
-                                setSidebarOpen(false) 
+                                setSidebarOpen(false)
                               }
                             }}
                             className={`flex justify-between items-center p-3 rounded-xl border transition cursor-pointer ${
@@ -1138,7 +1207,11 @@ async function markAsWatched(idx) {
 
       <ConfirmDeleteModal
         open={delModalOpen && isAdmin}
-        lessonTitle={delIndex != null && lessons[delIndex] ? lessons[delIndex].title : ''}
+        lessonTitle={
+          delIndex != null && lessons[delIndex]
+            ? lessons[delIndex].title
+            : ''
+        }
         loading={delLoading}
         onCancel={() => {
           if (!delLoading) {

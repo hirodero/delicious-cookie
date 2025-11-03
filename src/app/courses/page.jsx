@@ -964,7 +964,7 @@ export default function Courses() {
             <div className="fixed mt-6 flex left-[5%] bottom-5">
               <button
                 onClick={() => setEditor({ open: true, index: -1 })}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-500/20 px-4 py-2 hover:bg-amber-500/30"
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500/60 px-4 py-2 hover:bg-amber-500/30"
                 aria-label="Add card"
                 title="Add Course"
               >

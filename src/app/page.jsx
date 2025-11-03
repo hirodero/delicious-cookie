@@ -25,7 +25,7 @@ export default function Home() {
           width={300}
           height={300}
           priority
-          className="opacity-80 brightness-125 contrast-150 animate-pulse w-[90px] sm:w-[180px] md:w-[220px] lg:w-[300px] h-auto"
+          className="opacity-40 brightness-125 contrast-150 animate-pulse w-[90px] sm:w-[180px] md:w-[220px] lg:w-[300px] h-auto"
         />
       </div>
 
@@ -40,7 +40,7 @@ export default function Home() {
         aria-hidden
       >
         <Image
-          src="/assets/bro.png"
+          src="/assets/bro2.png"
           alt=""
           fill
           priority
@@ -65,22 +65,39 @@ export default function Home() {
       <section className="relative z-10 w-[92%] max-w-[1200px] pt-16 pb-10 md:pt-20 lg:pt-24">
         <div className=" rounded-xl px-6 sm:px-8 md:px-12 lg:px-16 py-8 md:py-10 max-w-[800px]">
           <h1 className="font-extrabold leading-tight tracking-tight">
-            <span className="block text-[clamp(26px,5vw,64px)]">Welcome to</span>
-            <span className={`${sail.className} block text-amber-400 text-[clamp(34px,6.5vw,68px)] leading-tight`}>
+            <span className="block text-[clamp(6px,5vw,45px)]">Welcome to</span>
+            <span className={`${sail.className} block text-amber-400 text-[clamp(55px,6.5vw,80px)] leading-tight`}>
               CuanVerse
             </span>
           </h1>
 
-          <p className="mt-4 max-w-[72ch] text-blue-300/95 text-[clamp(14px,2.3vw,20px)] leading-relaxed">
+          <p className="mt-4 max-w-[72ch] text-white text-[clamp(14px,2.3vw,20px)] leading-relaxed">
             CuanVerse adalah sebuah platform yang menyediakan fasilitas{' '}
             <span className="text-yellow-400 font-semibold">video based learning</span>{' '}
             untuk mendukung pemahaman kamu terhadap e-book yang sudah kamu beli.
           </p>
 
-          <div className="mt-8">
+          <div className="flex lg:justify-center lg:items-center mt-8 h-full">
             <button
               onClick={() => router.push('/courses')}
               className="
+              hidden
+                relative lg:inline-flex items-center justify-center
+                rounded-xl px-30 py-10 font-bold my-2
+                text-[clamp(12px,1.8vw,18px)]
+                border border-yellow-500/70 bg-black/85
+                transition-all
+                shadow-[0_0_18px_rgba(255,200,0,0.18)]
+                hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(255,200,0,0.28)]
+                hover:bg-linear-to-tr hover:from-red-600 hover:to-yellow-400 hover:text-black
+              "
+            >
+              Explore Course
+            </button>
+            <button
+              onClick={() => router.push('/courses')}
+              className="
+              lg:hidden
                 relative inline-flex items-center justify-center
                 rounded-xl px-10 py-4 font-bold
                 text-[clamp(12px,1.8vw,18px)]
@@ -102,17 +119,17 @@ export default function Home() {
           hidden lg:block z-10
           absolute right-6 xl:right-10
           bottom-8 xl:bottom-10
-          text-right
+          text-left
         "
       >
         <h2 className={`${sail.className} text-amber-400 text-[clamp(22px,2.6vw,40px)]`}>Valen Rewah</h2>
-        <p className="text-blue-300 text-[clamp(12px,1.4vw,16px)]">Influencer, and Entrepreneur</p>
-        <ul className="mt-2 space-y-1 text-blue-200 text-[clamp(11px,1.2vw,14px)] leading-5">
+        <p className="text-white text-[clamp(12px,1.4vw,16px)]">Influencer, and Entrepreneur</p>
+        <ul className="mt-2 space-y-1 text-white text-[clamp(11px,1.2vw,14px)] leading-5">
           <li>- 13.5M+ Followers on TikTok</li>
           <li>- 5.5M+ Followers on YouTube</li>
           <li>- 2.1M+ Followers on Instagram</li>
         </ul>
-        <div className="mt-3 text-yellow-400 font-semibold text-[clamp(11px,1.2vw,14px)]">
+        <div className="mt-3 text-white font-semibold text-[clamp(11px,1.2vw,14px)]">
           <p>Founder & CMO of The LGND</p>
           <p>Founder & CMO of Inside Glow</p>
         </div>
@@ -122,18 +139,18 @@ export default function Home() {
         className="
           lg:hidden
           absolute bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] right-4
-          z-10 w-[64%] max-w-[310px] text-right
+          z-10 w-[64%] max-w-[310px] text-left
           rounded-xl bg-black/38 backdrop-blur-[2px] px-3.5 py-3
         "
       >
-        <h2 className={`${sail.className} text-amber-400 text-[20px] leading-tight`}>Valen Rewah</h2>
-        <p className="text-blue-300 text-[12.5px]">Influencer, and Entrepreneur</p>
-        <ul className="mt-1.5 space-y-1 text-blue-200 text-[11.5px] leading-5">
+        <h2 className={`${sail.className} text-amber-400 text-[30px] leading-tight`}>Valen Rewah</h2>
+        <p className="text-[12.5px]">Influencer, and Entrepreneur</p>
+        <ul className="mt-1.5 space-y-1 text-white text-[11.5px] leading-5">
           <li>- 13.5M+ Followers on TikTok</li>
           <li>- 5.5M+ Followers on YouTube</li>
           <li>- 2.1M+ Followers on Instagram</li>
         </ul>
-        <div className="mt-2.5 text-yellow-400 font-semibold text-[11.5px]">
+        <div className="mt-2.5 font-semibold text-[11.5px]">
           <p>Founder & CMO of The LGND</p>
           <p>Founder & CMO of Inside Glow</p>
         </div>
