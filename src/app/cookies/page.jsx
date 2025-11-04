@@ -170,7 +170,10 @@ export default function PuzzlePage() {
                     {desc}
                   </div>
                 ) : (
-                  <pre className="text-emerald-300 text-sm whitespace-pre-wrap">{flag}</pre>
+                  <pre className="text-sm text-gray-400 whitespace-pre-wrap">
+                    {desc} <br/>
+                    <span className='text-emerald-400'>Flag: {flag}</span>
+                  </pre>
                 )}
               </div>
               <div className="mt-4 text-xs text-gray-400">
