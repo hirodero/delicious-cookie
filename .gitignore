@@ -22,5 +22,3 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
-# prisma generated client
-prisma/generated
